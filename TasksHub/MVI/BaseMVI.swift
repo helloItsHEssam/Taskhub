@@ -15,7 +15,7 @@ protocol MVIIntent {
     func mapToAction() -> Action
 }
 
-protocol MVIResult { }
+protocol MVIResult: Equatable { }
 
 protocol MVIProcessor {
     associatedtype Action: MVIAction
