@@ -8,26 +8,48 @@
 import Foundation
 
 final class MockRepository {
+    static let shared = MockRepository()
     
-    private(set) var tasks: [MyTask] = [
-        .init(
-            title: "hessam",
-            date: .now,
-            isCompleted: false
-        ),
-        .init(
-            title: "hessam 2",
-            date: Date(timeIntervalSince1970: 12321312),
-            isCompleted: true
-        )
-    ]
+    enum TaskError: Error, Equatable, LocalizedError {
+        case duplicated
+        case emptyTitle
+        
+        var errorDescription: String? {
+            switch self {
+            case .duplicated:
+                return "Task already exist"
+                
+            case .emptyTitle:
+                return "Task title can not be empty"
+            }
+        }
+    }
+    
+    private(set) var tasks: [MyTask] = []
     
     func completeTask(taskID: String) {
         guard let taskIndex = tasks.firstIndex(where: { $0.id == taskID }) else { return }
         tasks[taskIndex].isCompleted = true
     }
     
-    func insertTask(task: MyTask) {
+    func uncompleteTask(taskID: String) {
+        guard let taskIndex = tasks.firstIndex(where: { $0.id == taskID }) else { return }
+        tasks[taskIndex].isCompleted = false
+    }
+    
+    func removeTask(taskID: String) {
+        tasks.removeAll(where: { $0.id == taskID })
+    }
+    
+    func insertTask(task: MyTask) throws(TaskError) {
+        guard !tasks.contains(where: { $0.title == task.title }) else {
+            throw .duplicated
+        }
+        
+        guard !task.title.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw .emptyTitle
+        }
+        
         tasks.insert(task, at: 0)
     }
 }
